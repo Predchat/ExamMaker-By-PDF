@@ -1,8 +1,8 @@
-const CACHE_NAME = 'examforge-v1';
+const CACHE_NAME = 'examforge-v2';
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
+  '/ExamMaker-By-PDF/',
+  '/ExamMaker-By-PDF/index.html',
+  '/ExamMaker-By-PDF/manifest.json',
 ];
 
 // Install event

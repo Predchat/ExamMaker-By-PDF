@@ -2,10 +2,10 @@
   "name": "ExamForge - AI Exam Generator",
   "short_name": "ExamForge",
   "description": "Generate AI-powered exams from PDF lessons using Anthropic or OpenRouter APIs",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/ExamMaker-By-PDF/",
+  "scope": "/ExamMaker-By-PDF/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#0066cc",
   "icons": [
