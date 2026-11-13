@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ExamForge">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230066cc' width='192' height='192'/><text x='96' y='120' font-size='100' font-weight='bold' fill='white' text-anchor='middle' font-family='system-ui'>✨</text></svg>">
+<title>ExamForge</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  /* Light Mode */
+  --bg: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
+  --surface3: #e4e6eb;
+  --border: #d0d4da;
+  --text: #0a0e27;
+  --text2: #5a6c7d;
+  --text3: #8a9aaa;
+  --accent: #0066cc;
+  --accent-light: #e6f0ff;
+  --accent-border: #b3d9ff;
+  --green: #0caf00;
+  --green-light: #e6ffe6;
+  --green-border: #99ff99;
+  --red: #d32f2f;
+  --red-light: #ffe6e6;
+  --red-border: #ffb3b3;
+  --shadow: rgba(0, 10, 40, 0.08);
+}
+
+html[data-theme="dark"] {
+  --bg: #0a0e27;
+  --bg-secondary: #0f1322;
+  --surface: #16192e;
+  --surface2: #1f2440;
+  --surface3: #292e45;
+  --border: #3a4158;
+  --text: #f5f6f7;
+  --text2: #b8bcc6;
+  --text3: #7d8594;
+  --accent: #4fa3ff;
+  --accent-light: #1a3a66;
+  --accent-border: #2d5fa3;
+  --green: #4caf50;
+  --green-light: #1b5e20;
+  --green-border: #388e3c;
+  --red: #ff6b6b;
+  --red-light: #c62828;
+  --red-border: #d32f2f;
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.screen {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  animation: fadeUp 0.25s ease;
+}
+
+.screen.active {
+  display: flex;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.topbar {
+  padding: 18px 20px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tb-content {
+  flex: 1;
+}
+
+.tb-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.tb-sub {
+  font-size: 14px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.accent { color: var(--accent); }
+
+.theme-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: all 0.2s;
+}
+
+.theme-toggle:active {
+  opacity: 0.7;
+}
+
+.scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px;
+}
+
+.scroll-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-body::-webkit-scrollbar-thumb {
+  background: var(--surface3);
+  border-radius: 4px;
+}
+
+.slabel {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin: 20px 0 12px;
+  letter-spacing: 0.8px;
+}
+
+.label { margin-top: 16px; margin-bottom: 10px; }
+
+.input-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.field {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 42px 14px 16px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.field:focus {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.field::placeholder {
+  color: var(--text3);
+}
+
+.field-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.hint-box {
+  background: var(--accent-light);
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--accent);
+  line-height: 1.6;
+  margin: 10px 0;
+}
+
+.provider-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.provider-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.provider-card:active {
+  opacity: 0.8;
+}
+
+.provider-card.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.provider-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.provider-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.provider-hint {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.button, .gen-btn, .check-btn, .save-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.button:active, .gen-btn:active, .check-btn:active, .save-btn:active {
+  opacity: 0.9;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.button:disabled, .gen-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  box-shadow: none;
+}
+
+.spin {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-banner {
+  background: var(--red-light);
+  border: 1px solid var(--red-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--red);
+  display: none;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.error-banner.vis {
+  display: block;
+}
+
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.subject-chip {
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  transition: all 0.2s;
+}
+
+.subject-chip.active {
+  background: color-mix(in srgb, var(--chip-color) 15%, transparent);
+  border-color: var(--chip-color);
+  font-weight: 600;
+}
+
+.subject-chip:active {
+  opacity: 0.8;
+}
+
+.subj-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 0 auto 6px;
+}
+
+.subj-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface2);
+}
+
+.upload-zone:active {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.upload-zone p {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.upload-zone span {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.file-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-rm {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px;
+}
+
+.file-rm:active {
+  color: var(--red);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.setting-box {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.setting-box label {
+  font-size: 12px;
+  color: var(--text3);
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.setting-box select, .setting-box input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+}
+
+.exam-header {
+  margin-bottom: 16px;
+}
+
+.exam-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.exam-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.meta-tag {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-weight: 500;
+}
+
+.study-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.mode-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.mode-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.mode-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.qlist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.qcard {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.qhdr {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.qnum {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--accent);
+  border-radius: 6px;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.qtext {
+  flex: 1;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.qtag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  flex-shrink: 0;
+  margin-top: 2px;
+  text-transform: uppercase;
+}
+
+.qtag.mc {
+  background: rgba(79, 163, 255, 0.1);
+  color: #4fa3ff;
+  border-color: rgba(79, 163, 255, 0.3);
+}
+
+html[data-theme="light"] .qtag.mc {
+  background: rgba(0, 102, 204, 0.1);
+  color: #0066cc;
+  border-color: rgba(0, 102, 204, 0.3);
+}
+
+.qtag.tf {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+html[data-theme="light"] .qtag.tf {
+  background: rgba(12, 175, 0, 0.1);
+  color: #0caf00;
+  border-color: rgba(12, 175, 0, 0.3);
+}
+
+.qtag.sa {
+  background: rgba(79, 163, 255, 0.1);
+  color: #4fa3ff;
+  border-color: rgba(79, 163, 255, 0.3);
+}
+
+html[data-theme="light"] .qtag.sa {
+  background: rgba(0, 102, 204, 0.1);
+  color: #0066cc;
+  border-color: rgba(0, 102, 204, 0.3);
+}
+
+.qbody {
+  padding: 14px;
+}
+
+.mc-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mc-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  font-size: 15px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.mc-opt:active:not(.disabled) {
+  opacity: 0.8;
+}
+
+.mc-opt.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--text);
+}
+
+.mc-opt.correct {
+  border-color: var(--green) !important;
+  background: var(--green-light) !important;
+  color: var(--green) !important;
+}
+
+.mc-opt.wrong {
+  border-color: var(--red) !important;
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+}
+
+.mc-opt.disabled {
+  cursor: default;
+}
+
+.mc-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--surface);
+  color: var(--text3);
+  transition: all 0.2s;
+}
+
+.mc-opt.selected .mc-letter {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.mc-opt.correct .mc-letter {
+  background: var(--green);
+  border-color: var(--green);
+  color: #ffffff;
+}
+
+.mc-opt.wrong .mc-letter {
+  background: var(--red);
+  border-color: var(--red);
+  color: #ffffff;
+}
+
+.mc-opt-text {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.tf-opts {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tf-opt {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.tf-opt:active:not(.disabled) {
+  opacity: 0.8;
+}
+
+.tf-opt.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--text);
+}
+
+.tf-opt.correct {
+  border-color: var(--green) !important;
+  background: var(--green-light) !important;
+  color: var(--green) !important;
+}
+
+.tf-opt.wrong {
+  border-color: var(--red) !important;
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+}
+
+.tf-opt.disabled {
+  cursor: default;
+}
+
+.sa-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  outline: none;
+  resize: none;
+  min-height: 100px;
+  transition: all 0.2s;
+  margin-bottom: 10px;
+}
+
+.sa-input:focus {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.sa-input:disabled {
+  opacity: 0.7;
+}
+
+.feedback {
+  display: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  border: 1.5px solid;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.feedback.vis {
+  display: flex;
+}
+
+.feedback.correct {
+  background: var(--green-light);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.feedback.wrong {
+  background: var(--red-light);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.feedback-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.feedback-body {
+  flex: 1;
+}
+
+.exp-box {
+  background: var(--surface2);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.6;
+  display: none;
+  margin-top: 8px;
+}
+
+.exp-box.vis {
+  display: block;
+}
+
+.exp-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text3);
+  margin-bottom: 4px;
+}
+
+.bank-item {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bank-item:active {
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.bank-item-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.bank-item-meta {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.empty-icon {
+  font-size: 56px;
+  opacity: 0.3;
+  margin-bottom: 14px;
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+
+.empty-sub {
+  font-size: 15px;
+  color: var(--text3);
+  line-height: 1.6;
+}
+
+.navbar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 4px;
+  color: var(--text3);
+  font-size: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-weight: 600;
+}
+
+.nav-tab.active {
+  color: var(--accent);
+}
+
+.nav-tab svg {
+  width: 24px;
+  height: 24px;
+}
+
+#pdf-input {
+  display: none;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.model-status {
+  font-size: 12px;
+  margin-top: 6px;
+  min-height: 16px;
+  color: var(--green);
+}
+
+.model-status.err {
+  color: var(--red);
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div class="screen active" id="scr-setup">
+  <div class="topbar">
+    <div class="tb-content">
+      <div class="tb-title"><span class="accent">Exam</span>Forge</div>
+      <div class="tb-sub">AI-powered exam generator</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+  <div class="scroll-body">
+    <div class="slabel">Choose API Provider</div>
+    <div class="provider-grid">
+      <div class="provider-card active" id="prov-anthropic" onclick="selectProvider('anthropic')">
+        <div class="provider-icon">🧠</div>
+        <div class="provider-name">Anthropic</div>
+        <div class="provider-hint">Claude models</div>
+      </div>
+      <div class="provider-card" id="prov-openrouter" onclick="selectProvider('openrouter')">
+        <div class="provider-icon">🔀</div>
+        <div class="provider-name">OpenRouter</div>
+        <div class="provider-hint">100+ models</div>
+      </div>
+    </div>
+
+    <div class="slabel">API Key</div>
+    <div class="input-wrap">
+      <input class="field" type="password" id="setup-apikey" placeholder="Paste your API key…" autocomplete="off">
+      <span class="field-icon" onclick="toggleSetupKey()">👁</span>
+    </div>
+    <p class="hint-box" id="setup-hint">Get your key at <strong>console.anthropic.com</strong></p>
+
+    <div class="slabel">Model</div>
+    <div style="display:flex;gap:8px;margin-bottom:4px;">
+      <select class="field" id="setup-model" style="flex:1;margin:0;">
+        <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (Best)</option>
+        <option value="claude-haiku-4-20250514" selected>Claude Haiku 4 (Fast)</option>
+        <option value="claude-haiku-3-5-20241022">Claude Haiku 3.5</option>
+      </select>
+      <button class="button-secondary" id="fetch-models-btn" onclick="fetchORModels()" style="display:none;width:auto;margin:0;padding:0 16px;">↻</button>
+    </div>
+    <div class="model-status" id="model-status"></div>
+
+    <button class="button" onclick="saveSetup()">Save &amp; Continue →</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="screen" id="scr-main">
+  <div class="topbar">
+    <div class="tb-content">
+      <div class="tb-title"><span class="accent">Exam</span>Forge</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+  <div class="scroll-body">
+    <div class="error-banner" id="main-err"></div>
+
+    <div class="slabel">Select Subject</div>
+    <div class="subject-grid" id="subj-grid"></div>
+
+    <div class="slabel">Upload PDF Lesson</div>
+    <div class="upload-zone" onclick="pickPDF()">
+      <p style="margin-bottom: 8px; font-size: 40px;">📄</p>
+      <p><span>Tap to choose</span> a PDF file</p>
+    </div>
+    <div class="file-badge" id="file-badge" style="display:none;">
+      <span class="file-name" id="file-name-txt"></span>
+      <button class="file-rm" onclick="removeFile()">✕</button>
+    </div>
+    <input type="file" id="pdf-input" accept=".pdf,application/pdf" onchange="handleFileInput(event)">
+
+    <div class="slabel">Exam Settings</div>
+    <div class="settings-grid">
+      <div class="setting-box">
+        <label>Number of Questions</label>
+        <select id="setting-numq">
+          <option>5</option><option>8</option><option selected>10</option><option>15</option><option>20</option>
+        </select>
+      </div>
+      <div class="setting-box">
+        <label>Difficulty Level</label>
+        <select id="setting-diff">
+          <option>easy</option><option selected>medium</option><option>hard</option><option>mixed</option>
+        </select>
+      </div>
+      <div class="setting-box">
+        <label>Question Type</label>
+        <select id="setting-type">
+          <option>multiple_choice</option><option>true_false</option><option>short_answer</option><option selected>mixed</option>
+        </select>
+      </div>
+      <div class="setting-box">
+        <label>Language</label>
+        <select id="setting-lang">
+          <option>English</option><option>Sinhala</option><option>Korean</option><option>Japanese</option><option>Chinese</option><option>Spanish</option><option>French</option><option>German</option><option>Arabic</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="gen-btn" id="gen-btn" onclick="generateExam()">
+      <span id="gen-icon">✨</span>
+      <span id="gen-txt">Generate Exam</span>
+    </button>
+  </div>
+
+  <div class="navbar">
+    <button class="nav-tab active" onclick="switchTab('main')">🏠 Generate</button>
+    <button class="nav-tab" onclick="switchTab('bank')">📚 Bank</button>
+  </div>
+</div>
+
+<!-- EXAM -->
+<div class="screen" id="scr-exam">
+  <div class="topbar">
+    <button onclick="backToMain()" style="background:none;border:none;color:var(--text2);cursor:pointer;padding:8px;font-size:20px;margin-right:8px;">‹</button>
+    <div style="flex:1;">
+      <div class="tb-title" id="exam-title" style="font-size:18px;"></div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+  <div class="scroll-body">
+    <div class="exam-header">
+      <div class="exam-meta" id="exam-meta"></div>
+      <div class="study-bar">
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="mode-study" onclick="setStudyMode('study')">✏️ Study</button>
+          <button class="mode-btn" id="mode-review" onclick="setStudyMode('review')">📖 Review</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="qlist" id="qlist"></div>
+
+    <button class="check-btn" id="check-btn" onclick="checkAnswers()">✓ Check Answers</button>
+    <button class="save-btn" onclick="saveExam()">💾 Save to Bank</button>
+  </div>
+
+  <div class="navbar">
+    <button class="nav-tab" onclick="backToMain()">🏠 Back</button>
+    <button class="nav-tab" onclick="exportExam()">📤 Export</button>
+  </div>
+</div>
+
+<!-- BANK -->
+<div class="screen" id="scr-bank">
+  <div class="topbar">
+    <div class="tb-content">
+      <div class="tb-title">Question Bank</div>
+      <div class="tb-sub" id="bank-sub">0 exams</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+  <div class="scroll-body" id="bank-list"></div>
+
+  <div class="navbar">
+    <button class="nav-tab" onclick="switchTab('main')">🏠 Generate</button>
+    <button class="nav-tab active" onclick="switchTab('bank')">📚 Bank</button>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const SUBJECTS = ['Biology','Math','History','Physics','English','Chemistry'];
+const SUBJECT_COLORS = ['#0066cc','#0caf00','#ff9800','#e91e63','#9c27b0','#00bcd4'];
+
+const ANTHROPIC_MODELS = [
+  {id:'claude-sonnet-4-20250514', label:'Claude Sonnet 4'},
+  {id:'claude-haiku-4-20250514', label:'Claude Haiku 4'},
+  {id:'claude-haiku-3-5-20241022', label:'Claude Haiku 3.5'},
+];
+
+const OPENROUTER_POPULAR = [
+  {id:'anthropic/claude-opus', label:'Claude Opus'},
+  {id:'anthropic/claude-sonnet', label:'Claude Sonnet 3.5'},
+  {id:'openai/gpt-4-turbo', label:'GPT-4 Turbo'},
+  {id:'openai/gpt-4o', label:'GPT-4o'},
+  {id:'openai/gpt-3.5-turbo', label:'GPT-3.5 Turbo'},
+  {id:'google/gemini-pro', label:'Gemini Pro'},
+  {id:'meta-llama/llama-2-70b-chat', label:'Llama 2 70B'},
+];
+
+let S = {
+  provider: 'anthropic',
+  apiKey: '',
+  model: 'claude-haiku-4-20250514',
+  orModels: [],
+  activeSubj: 0,
+  currentPDF: null,
+  currentPDFName: '',
+  currentExam: null,
+  exams: [],
+  userAnswers: {},
+  checked: false,
+  studyMode: 'study',
+  theme: 'light',
+};
+
+function save(k, v) { localStorage.setItem('ef_'+k, JSON.stringify(v)); }
+function load(k, def) { try { const v = localStorage.getItem('ef_'+k); return v ? JSON.parse(v) : def; } catch { return def; } }
+
+function toggleTheme() {
+  S.theme = S.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', S.theme);
+  save('theme', S.theme);
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  document.querySelectorAll('.theme-toggle').forEach(btn => {
+    btn.textContent = S.theme === 'light' ? '🌙' : '☀️';
+  });
+}
+
+function selectProvider(p) {
+  S.provider = p;
+  document.getElementById('prov-anthropic').classList.toggle('active', p === 'anthropic');
+  document.getElementById('prov-openrouter').classList.toggle('active', p === 'openrouter');
+  document.getElementById('setup-hint').innerHTML = p === 'anthropic'
+    ? 'Get your key at <strong>console.anthropic.com</strong>'
+    : 'Get your key at <strong>openrouter.ai/keys</strong>';
+  document.getElementById('fetch-models-btn').style.display = p === 'openrouter' ? 'inline-flex' : 'none';
+  updateModelSelect();
+}
+
+function updateModelSelect() {
+  const sel = document.getElementById('setup-model');
+  sel.innerHTML = '';
+  if (S.provider === 'anthropic') {
+    ANTHROPIC_MODELS.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.label;
+      if (m.id === S.model) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  } else {
+    const models = S.orModels.length > 0 ? S.orModels : OPENROUTER_POPULAR;
+    models.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.label;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+async function fetchORModels() {
+  const key = document.getElementById('setup-apikey').value.trim();
+  if (!key) {
+    document.getElementById('model-status').textContent = '⚠ Enter key first';
+    document.getElementById('model-status').className = 'model-status err';
+    return;
+  }
+  
+  document.getElementById('model-status').textContent = 'Fetching models…';
+  document.getElementById('model-status').className = 'model-status';
+  document.getElementById('fetch-models-btn').disabled = true;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: { 'Authorization': 'Bearer '+key }
+    });
+    if (!res.ok) throw new Error('Failed to fetch models');
+    const data = await res.json();
+    S.orModels = (data.data || []).filter(m => m.id && m.name).map(m => ({id:m.id, name:m.name})).sort((a,b)=>a.id.localeCompare(b.id));
+    updateModelSelect();
+    document.getElementById('model-status').textContent = '✓ '+S.orModels.length+' models loaded';
+    document.getElementById('model-status').className = 'model-status';
+  } catch (e) {
+    document.getElementById('model-status').textContent = '✗ '+e.message;
+    document.getElementById('model-status').className = 'model-status err';
+  } finally {
+    document.getElementById('fetch-models-btn').disabled = false;
+  }
+}
+
+function toggleSetupKey() {
+  const f = document.getElementById('setup-apikey');
+  f.type = f.type === 'password' ? 'text' : 'password';
+}
+
+function saveSetup() {
+  const key = document.getElementById('setup-apikey').value.trim();
+  if (!key) { alert('Please enter your API key'); return; }
+  S.apiKey = key;
+  S.model = document.getElementById('setup-model').value;
+  save('provider', S.provider);
+  save('apiKey', S.apiKey);
+  save('model', S.model);
+  if (S.orModels.length > 0) save('orModels', S.orModels);
+  showScreen('main');
+  renderSubjects();
+}
+
+window.addEventListener('load', () => {
+  S.theme = load('theme', 'light');
+  document.documentElement.setAttribute('data-theme', S.theme);
+  updateThemeIcon();
+
+  S.provider = load('provider', 'anthropic');
+  S.apiKey = load('apiKey', '');
+  S.model = load('model', 'claude-haiku-4-20250514');
+  S.orModels = load('orModels', []);
+  S.exams = load('exams', []);
+
+  if (S.apiKey) {
+    showScreen('main');
+    renderSubjects();
+  } else {
+    selectProvider(S.provider);
+  }
+});
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-'+name).classList.add('active');
+}
+
+function switchTab(name) {
+  showScreen(name);
+  if (name === 'bank') renderBank();
+}
+
+function backToMain() {
+  showScreen('main');
+}
+
+function renderSubjects() {
+  document.getElementById('subj-grid').innerHTML = SUBJECTS.map((s, i) => {
+    const active = i === S.activeSubj;
+    return `<div class="subject-chip ${active?'active':''}" style="--chip-color:${SUBJECT_COLORS[i]}" 
+      onclick="S.activeSubj=${i}; renderSubjects()">
+      <div class="subj-dot" style="background:${SUBJECT_COLORS[i]}"></div>
+      <div class="subj-label">${s}</div>
+    </div>`;
+  }).join('');
+}
+
+function pickPDF() {
+  document.getElementById('pdf-input').click();
+}
+
+function handleFileInput(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    S.currentPDF = new Uint8Array(ev.target.result);
+    S.currentPDFName = file.name;
+    document.getElementById('upload-zone').style.display = 'none';
+    document.getElementById('file-badge').style.display = 'flex';
+    document.getElementById('file-name-txt').textContent = file.name;
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function removeFile() {
+  S.currentPDF = null;
+  S.currentPDFName = '';
+  document.getElementById('pdf-input').value = '';
+  document.getElementById('upload-zone').style.display = '';
+  document.getElementById('file-badge').style.display = 'none';
+}
+
+async function extractPDFText(data) {
+  const pdf = await pdfjsLib.getDocument({data}).promise;
+  let text = '';
+  for (let i = 1; i <= Math.min(pdf.numPages, 30); i++) {
+    const pg = await pdf.getPage(i);
+    const ct = await pg.getTextContent();
+    text += ct.items.map(x => x.str).join(' ') + '\n';
+  }
+  return text.trim().slice(0, 18000);
+}
+
+async function generateExam() {
+  if (!S.apiKey) { showErr('No API key'); return; }
+  if (!S.currentPDF) { showErr('No PDF selected'); return; }
+
+  hideErr();
+  setGen(true);
+
+  try {
+    const pdfText = await extractPDFText(S.currentPDF);
+    if (pdfText.length < 80) throw new Error('Could not extract text from PDF');
+
+    const numQ = document.getElementById('setting-numq').value;
+    const diff = document.getElementById('setting-diff').value;
+    const type = document.getElementById('setting-type').value;
+    const lang = document.getElementById('setting-lang').value;
+    const subj = SUBJECTS[S.activeSubj];
+
+    const typeInstr = {
+      multiple_choice: 'All questions must be multiple choice with exactly 4 options labeled A, B, C, D.',
+      true_false: 'All questions must be True/False.',
+      short_answer: 'All questions must require a short written answer (1-3 sentences).',
+      mixed: 'Mix types: about 50% multiple choice, 25% true/false, 25% short answer.',
+    }[type];
+
+    const prompt = `Generate exactly ${numQ} exam questions based on this content for subject: "${subj}".
+Difficulty: ${diff}
+${typeInstr}
+Language: ALL content MUST be in ${lang}.
+
+Return ONLY valid JSON (no markdown, no backticks):
+{
+  "title": "Exam Title",
+  "questions": [
+    {"type":"multiple_choice","question":"...","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","explanation":"..."},
+    {"type":"true_false","question":"...","options":[],"answer":"True","explanation":"..."},
+    {"type":"short_answer","question":"...","options":[],"answer":"...","explanation":"..."}
+  ]
+}
+
+CONTENT:
+${pdfText}`;
+
+    let res;
+    if (S.provider === 'anthropic') {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': S.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: S.model,
+          max_tokens: 4096,
+          messages: [{role: 'user', content: prompt}],
+        }),
+      });
+    } else {
+      res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer '+S.apiKey,
+          'HTTP-Referer': 'https://examforge.app',
+          'X-Title': 'ExamForge',
+        },
+        body: JSON.stringify({
+          model: S.model,
+          max_tokens: 4096,
+          messages: [{role: 'user', content: prompt}],
+        }),
+      });
+    }
+
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.error?.message || e.error || 'API error '+res.status);
+    }
+
+    const data = await res.json();
+    const text = S.provider === 'anthropic' ? data.content[0].text : data.choices[0].message.content;
+    const json = text.match(/\{[\s\S]*\}/)[0];
+    const exam = JSON.parse(json);
+
+    exam.pdfName = S.currentPDFName;
+    exam.subject = subj;
+    exam.provider = S.provider;
+    exam.model = S.model;
+    exam.id = Date.now();
+
+    S.currentExam = exam;
+    S.userAnswers = {};
+    S.checked = false;
+    S.studyMode = 'study';
+
+    showExam();
+  } catch (err) {
+    showErr(err.message);
+  } finally {
+    setGen(false);
+  }
+}
+
+function setGen(on) {
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = on;
+  document.getElementById('gen-icon').innerHTML = on ? '<div class="spin"></div>' : '✨';
+  document.getElementById('gen-txt').textContent = on ? 'Generating…' : 'Generate Exam';
+}
+
+function showExam() {
+  const e = S.currentExam;
+  document.getElementById('exam-title').textContent = e.title;
+  const prov = e.provider === 'openrouter' ? '🔀 ' : '🧠 ';
+  document.getElementById('exam-meta').innerHTML = `
+    <span class="meta-tag">📋 ${e.questions.length} Questions</span>
+    <span class="meta-tag">${e.subject}</span>
+    <span class="meta-tag">${prov}${(e.model || '').split('/').pop().slice(0,15)}</span>
+  `;
+
+  document.getElementById('qlist').innerHTML = e.questions.map((q, i) => renderQ(q, i)).join('');
+  document.getElementById('check-btn').disabled = false;
+  S.userAnswers = {};
+  S.checked = false;
+  S.studyMode = 'study';
+  setStudyMode('study');
+  showScreen('exam');
+}
+
+function renderQ(q, i) {
+  const tLabel = {multiple_choice:'MC', true_false:'T/F', short_answer:'SA'}[q.type] || '?';
+  const tClass = {multiple_choice:'mc', true_false:'tf', short_answer:'sa'}[q.type] || 'sa';
+
+  let input = '';
+  if (q.type === 'multiple_choice') {
+    input = '<div class="mc-opts">' +
+      (q.options || []).map(opt => {
+        const l = opt.charAt(0).toUpperCase();
+        return `<div class="mc-opt" id="opt_${i}_${l}" onclick="selectMC(${i},'${l}')">
+          <div class="mc-letter">${l}</div>
+          <div class="mc-opt-text">${esc(opt.slice(2).trim())}</div>
+        </div>`;
+      }).join('') + '</div>';
+  } else if (q.type === 'true_false') {
+    input = `<div class="tf-opts">
+      <div class="tf-opt" id="tf_${i}_True" onclick="selectTF(${i},'True')">✓ True</div>
+      <div class="tf-opt" id="tf_${i}_False" onclick="selectTF(${i},'False')">✗ False</div>
+    </div>`;
+  } else {
+    input = `<textarea class="sa-input" id="sa_${i}" placeholder="Type your answer here…" 
+      oninput="S.userAnswers[${i}]=this.value"></textarea>`;
+  }
+
+  const exp = q.explanation ? `<div class="exp-box" id="exp_${i}"><div class="exp-lbl">Explanation</div>${esc(q.explanation)}</div>` : '';
+
+  return `<div class="qcard" id="qcard_${i}">
+    <div class="qhdr">
+      <span class="qnum">Q${i+1}</span>
+      <span class="qtext">${esc(q.question)}</span>
+      <span class="qtag ${tClass}">${tLabel}</span>
+    </div>
+    <div class="qbody">
+      ${input}
+      <div class="feedback" id="feedback_${i}">
+        <span class="feedback-icon"></span>
+        <span class="feedback-body"></span>
+      </div>
+      ${exp}
+    </div>
+  </div>`;
+}
+
+function selectMC(i, l) {
+  if (S.checked) return;
+  S.userAnswers[i] = l;
+  S.currentExam.questions[i].options.forEach(opt => {
+    const el = document.getElementById('opt_'+i+'_'+opt.charAt(0).toUpperCase());
+    if (el) el.classList.remove('selected');
+  });
+  const el = document.getElementById('opt_'+i+'_'+l);
+  if (el) el.classList.add('selected');
+}
+
+function selectTF(i, v) {
+  if (S.checked) return;
+  S.userAnswers[i] = v;
+  ['True','False'].forEach(x => {
+    const el = document.getElementById('tf_'+i+'_'+x);
+    if (el) el.classList.toggle('selected', x === v);
+  });
+}
+
+function setStudyMode(m) {
+  S.studyMode = m;
+  document.getElementById('mode-study').classList.toggle('active', m === 'study');
+  document.getElementById('mode-review').classList.toggle('active', m === 'review');
+  document.getElementById('check-btn').style.display = m === 'study' ? '' : 'none';
+
+  S.currentExam.questions.forEach((q, i) => {
+    const card = document.getElementById('qcard_'+i);
+    const feedback = document.getElementById('feedback_'+i);
+    const exp = document.getElementById('exp_'+i);
+
+    if (feedback) feedback.className = 'feedback';
+    if (exp) exp.classList.remove('vis');
+    if (card) card.className = 'qcard';
+
+    if (q.type === 'multiple_choice') {
+      (q.options || []).forEach(opt => {
+        const el = document.getElementById('opt_'+i+'_'+opt.charAt(0).toUpperCase());
+        if (el) { el.className = 'mc-opt'; el.onclick = m === 'review' ? null : () => selectMC(i, opt.charAt(0).toUpperCase()); }
+      });
+    } else if (q.type === 'true_false') {
+      ['True','False'].forEach(v => {
+        const el = document.getElementById('tf_'+i+'_'+v);
+        if (el) { el.className = 'tf-opt'; el.onclick = m === 'review' ? null : () => selectTF(i, v); }
+      });
+    } else {
+      const el = document.getElementById('sa_'+i);
+      if (el) { el.disabled = m === 'review'; el.value = ''; el.className = 'sa-input'; }
+    }
+  });
+}
+
+function checkAnswers() {
+  if (!S.currentExam) return;
+  S.checked = true;
+  document.getElementById('check-btn').disabled = true;
+
+  let correct = 0, total = 0;
+  S.currentExam.questions.forEach((q, i) => {
+    const card = document.getElementById('qcard_'+i);
+    const feedback = document.getElementById('feedback_'+i);
+    const exp = document.getElementById('exp_'+i);
+    const userVal = S.userAnswers[i];
+
+    if (q.type === 'multiple_choice') {
+      total++;
+      const correctLetter = (q.answer || '').trim().toUpperCase().charAt(0);
+      (q.options || []).forEach(opt => {
+        const l = opt.charAt(0).toUpperCase();
+        const el = document.getElementById('opt_'+i+'_'+l);
+        if (el) { el.classList.add('disabled'); el.onclick = null; }
+      });
+
+      if (userVal === correctLetter) {
+        correct++;
+        const el = document.getElementById('opt_'+i+'_'+userVal);
+        if (el) { el.classList.remove('selected'); el.classList.add('correct'); }
+        if (card) card.className = 'qcard';
+        feedback.className = 'feedback vis correct';
+        feedback.querySelector('.feedback-icon').textContent = '✓';
+        feedback.querySelector('.feedback-body').innerHTML = '<strong>Correct!</strong>';
+      } else {
+        const el = document.getElementById('opt_'+i+'_'+userVal);
+        if (el) { el.classList.remove('selected'); el.classList.add('wrong'); }
+        if (card) card.className = 'qcard';
+        feedback.className = 'feedback vis wrong';
+        feedback.querySelector('.feedback-icon').textContent = '✗';
+        feedback.querySelector('.feedback-body').innerHTML = `<strong>Wrong.</strong> Correct: <strong>${esc(correctLetter)}</strong>`;
+      }
+    } else if (q.type === 'true_false') {
+      total++;
+      const correctVal = (q.answer || '').trim();
+      ['True','False'].forEach(v => {
+        const el = document.getElementById('tf_'+i+'_'+v);
+        if (el) { el.classList.add('disabled'); el.onclick = null; }
+      });
+
+      if (userVal === correctVal) {
+        correct++;
+        const el = document.getElementById('tf_'+i+'_'+userVal);
+        if (el) { el.classList.remove('selected'); el.classList.add('correct'); }
+        if (card) card.className = 'qcard';
+        feedback.className = 'feedback vis correct';
+        feedback.querySelector('.feedback-icon').textContent = '✓';
+        feedback.querySelector('.feedback-body').innerHTML = '<strong>Correct!</strong>';
+      } else {
+        const el = document.getElementById('tf_'+i+'_'+userVal);
+        if (el) { el.classList.remove('selected'); el.classList.add('wrong'); }
+        if (card) card.className = 'qcard';
+        feedback.className = 'feedback vis wrong';
+        feedback.querySelector('.feedback-icon').textContent = '✗';
+        feedback.querySelector('.feedback-body').innerHTML = `<strong>Wrong.</strong> Correct: <strong>${esc(correctVal)}</strong>`;
+      }
+    } else {
+      feedback.className = 'feedback vis correct';
+      feedback.querySelector('.feedback-icon').textContent = '✓';
+      feedback.querySelector('.feedback-body').innerHTML = `Model answer: <strong>${esc(q.answer || '')}</strong>`;
+    }
+
+    if (exp) exp.classList.add('vis');
+  });
+
+  if (total > 0) {
+    const pct = Math.round(correct/total*100);
+    alert(`Score: ${correct}/${total} (${pct}%)`);
+  }
+}
+
+function saveExam() {
+  if (!S.currentExam) return;
+  S.currentExam.savedAt = new Date().toISOString();
+  S.exams.unshift(S.currentExam);
+  save('exams', S.exams);
+  alert('Exam saved ✓');
+  showScreen('main');
+}
+
+function renderBank() {
+  document.getElementById('bank-sub').textContent = S.exams.length + ' exam' + (S.exams.length !== 1 ? 's' : '');
+
+  if (!S.exams.length) {
+    document.getElementById('bank-list').innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">No exams saved yet</div>
+      <div class="empty-sub">Generate and save exams from the main screen</div>
+    </div>`;
+    return;
+  }
+
+  document.getElementById('bank-list').innerHTML = S.exams.map(e => {
+    const prov = e.provider === 'openrouter' ? '🔀' : '🧠';
+    return `<div class="bank-item" onclick="loadExam('${e.id}')">
+      <div class="bank-item-title">${esc(e.title)}</div>
+      <div class="bank-item-meta">📋 ${e.questions.length} Qs • ${e.subject} • ${prov} • ${new Date(e.savedAt).toLocaleDateString()}</div>
+    </div>`;
+  }).join('');
+}
+
+function loadExam(id) {
+  const exam = S.exams.find(e => e.id == id);
+  if (!exam) return;
+  S.currentExam = exam;
+  S.userAnswers = {};
+  S.checked = false;
+  S.studyMode = 'study';
+  showExam();
+}
+
+function exportExam() {
+  if (!S.currentExam) return;
+  let txt = `${S.currentExam.subject}\n${S.currentExam.title}\n${'='.repeat(Math.min(S.currentExam.title.length, 60))}\n\n`;
+  S.currentExam.questions.forEach((q, i) => {
+    txt += `Q${i+1}. [${q.type}] ${q.question}\n`;
+    if (q.options?.length) q.options.forEach(o => txt += `   ${o}\n`);
+    txt += `Answer: ${q.answer}\n`;
+    if (q.explanation) txt += `Explanation: ${q.explanation}\n`;
+    txt += '\n';
+  });
+  const blob = new Blob([txt], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (S.currentExam.title || 'exam').replace(/[^a-z0-9]/gi, '_').slice(0, 60) + '.txt';
+  a.click();
+}
+
+function showErr(msg) {
+  const el = document.getElementById('main-err');
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('vis');
+}
+
+function hideErr() {
+  document.getElementById('main-err').classList.remove('vis');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Register Service Worker for offline support and PWA installation
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js').catch(err => {
+    console.log('Service Worker registration failed:', err);
+  });
+}
+</script>
+</body>
+</html>
