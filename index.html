@@ -1056,6 +1056,72 @@ input[type="file"] {
   <div class="navbar">
     <button class="nav-tab active" onclick="switchTab('main')">🏠 Generate</button>
     <button class="nav-tab" onclick="switchTab('bank')">📚 Bank</button>
+    <button class="nav-tab" onclick="switchTab('settings')">⚙️ Settings</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="scr-settings">
+  <div class="topbar">
+    <div class="tb-content">
+      <div class="tb-title">Settings</div>
+      <div class="tb-sub" id="settings-sub">Manage your app</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+  <div class="scroll-body">
+    <div class="slabel">🔐 API Configuration</div>
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:600;">Current Provider</div>
+      <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:14px;" id="settings-provider">Anthropic</div>
+      <button class="button-secondary" onclick="showScreen('scr-setup')" style="margin:0;">Change API Key & Provider</button>
+    </div>
+
+    <div class="slabel">🎨 Display</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Dark Mode</div>
+        <div style="font-size:12px;color:var(--text3);">Current: <strong id="theme-status">Light</strong></div>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" style="margin:0;padding:8px 12px;">🌙</button>
+    </div>
+
+    <div class="slabel">📊 Data</div>
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;">Saved Exams</div>
+      <div style="font-size:24px;font-weight:700;color:var(--accent);margin-bottom:14px;" id="settings-exam-count">0</div>
+      <button class="button-secondary" onclick="downloadAllExams()" style="margin-bottom:8px;margin:0 0 8px 0;">📥 Export All Exams</button>
+      <button class="button-secondary" onclick="clearAllExams()" style="margin:0;background:rgba(211,47,47,.1);border-color:rgba(211,47,47,.3);color:#d32f2f;">🗑️ Clear All Exams</button>
+    </div>
+
+    <div class="slabel">💾 Storage & Cache</div>
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:10px;font-weight:600;">Browser Storage</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6;">Your API key and exams are saved locally on this device. No data is sent to servers except API calls.</div>
+      <button class="button-secondary" onclick="clearCache()" style="margin:0;">Clear Cache & Reload</button>
+    </div>
+
+    <div class="slabel">ℹ️ About</div>
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:600;">Version</div>
+      <div style="font-size:14px;color:var(--text);margin-bottom:14px;">ExamForge PWA v2.0</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px;">
+        <strong>AI-Powered Exam Generator</strong><br>
+        Generate exams from PDF lessons using Claude or 100+ models via OpenRouter.<br><br>
+        ✨ Single-page web app<br>
+        🔒 Offline support<br>
+        💻 No server needed
+      </div>
+      <div style="font-size:11px;color:var(--text3);padding-top:12px;border-top:1px solid var(--border);">
+        Made with ✨ by Claude
+      </div>
+    </div>
+  </div>
+
+  <div class="navbar">
+    <button class="nav-tab" onclick="switchTab('main')">🏠 Generate</button>
+    <button class="nav-tab" onclick="switchTab('bank')">📚 Bank</button>
+    <button class="nav-tab active" onclick="switchTab('settings')">⚙️ Settings</button>
   </div>
 </div>
 
@@ -1272,6 +1338,7 @@ function showScreen(name) {
 function switchTab(name) {
   showScreen(name);
   if (name === 'bank') renderBank();
+  if (name === 'settings') renderSettings();
 }
 
 function backToMain() {
@@ -1691,6 +1758,53 @@ function showErr(msg) {
 
 function hideErr() {
   document.getElementById('main-err').classList.remove('vis');
+}
+
+function renderSettings() {
+  const providerName = S.provider === 'anthropic' ? 'Anthropic (Claude)' : 'OpenRouter (100+ models)';
+  document.getElementById('settings-provider').textContent = providerName;
+  document.getElementById('theme-status').textContent = S.theme === 'light' ? 'Light' : 'Dark';
+  document.getElementById('settings-exam-count').textContent = S.exams.length;
+}
+
+function downloadAllExams() {
+  if (S.exams.length === 0) {
+    alert('No exams to export');
+    return;
+  }
+  const data = JSON.stringify(S.exams, null, 2);
+  const blob = new Blob([data], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'examforge-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  alert('✅ Exams exported successfully!');
+}
+
+function clearAllExams() {
+  if (S.exams.length === 0) {
+    alert('No exams to clear');
+    return;
+  }
+  if (confirm(`Delete all ${S.exams.length} saved exams? This cannot be undone.`)) {
+    S.exams = [];
+    save('exams', S.exams);
+    renderSettings();
+    alert('✅ All exams cleared');
+  }
+}
+
+function clearCache() {
+  if (confirm('This will clear the browser cache and reload the page. API key will remain saved.')) {
+    if ('serviceWorker' in navigator) {
+      caches.keys().then(cacheNames => {
+        cacheNames.forEach(name => caches.delete(name));
+        location.reload();
+      });
+    } else {
+      location.reload();
+    }
+  }
 }
 
 function esc(s) {
