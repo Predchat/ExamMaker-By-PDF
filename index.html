@@ -1761,10 +1761,14 @@ function hideErr() {
 }
 
 function goToSetup() {
-  // Load current settings into form
-  document.getElementById('setup-apikey').value = S.apiKey;
-  selectProvider(S.provider);
+  // Switch to setup screen first
   showScreen('scr-setup');
+  // Then populate form with current values
+  setTimeout(() => {
+    document.getElementById('setup-apikey').value = S.apiKey || '';
+    document.getElementById('setup-model').value = S.model;
+    selectProvider(S.provider);
+  }, 50);
 }
 
 function renderSettings() {
