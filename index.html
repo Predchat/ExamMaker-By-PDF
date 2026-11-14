@@ -1074,7 +1074,7 @@ input[type="file"] {
     <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;">
       <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:600;">Current Provider</div>
       <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:14px;" id="settings-provider">Anthropic</div>
-      <button class="button-secondary" onclick="showScreen('scr-setup')" style="margin:0;">Change API Key & Provider</button>
+      <button class="button-secondary" onclick="goToSetup()" style="margin:0;">Change API Key & Provider</button>
     </div>
 
     <div class="slabel">🎨 Display</div>
@@ -1177,7 +1177,7 @@ input[type="file"] {
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const SUBJECTS = ['Biology','Math','History','Physics','English','Chemistry'];
+const SUBJECTS = ['Engineering','CAD','Topik II','OBM','Mechatronics','Korean Language'];
 const SUBJECT_COLORS = ['#0066cc','#0caf00','#ff9800','#e91e63','#9c27b0','#00bcd4'];
 
 const ANTHROPIC_MODELS = [
@@ -1277,7 +1277,7 @@ async function fetchORModels() {
     });
     if (!res.ok) throw new Error('Failed to fetch models');
     const data = await res.json();
-    S.orModels = (data.data || []).filter(m => m.id && m.name).map(m => ({id:m.id, name:m.name})).sort((a,b)=>a.id.localeCompare(b.id));
+    S.orModels = (data.data || []).filter(m => m.id && m.name).map(m => ({id:m.id, label:m.name})).sort((a,b)=>a.id.localeCompare(b.id));
     updateModelSelect();
     document.getElementById('model-status').textContent = '✓ '+S.orModels.length+' models loaded';
     document.getElementById('model-status').className = 'model-status';
@@ -1758,6 +1758,13 @@ function showErr(msg) {
 
 function hideErr() {
   document.getElementById('main-err').classList.remove('vis');
+}
+
+function goToSetup() {
+  // Load current settings into form
+  document.getElementById('setup-apikey').value = S.apiKey;
+  selectProvider(S.provider);
+  showScreen('scr-setup');
 }
 
 function renderSettings() {
